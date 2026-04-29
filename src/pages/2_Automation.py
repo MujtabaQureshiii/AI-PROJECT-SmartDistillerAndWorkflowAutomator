@@ -1,10 +1,8 @@
 import streamlit as st
-import time, os, sys
+import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from sheets import append_to_sheet
-from mailer  import send_email
-from mock_mode import sheets_configured, email_configured
+from webhook import send_to_n8n
 from fa_icons import inject_fa, fa
 
 st.set_page_config(page_title="Automation — AI Smart-Distiller", page_icon="⚡", layout="wide")
@@ -22,15 +20,13 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 .dest-title { font-size: 1.05rem; font-weight: 500; color: #1a1a2e; display: flex; align-items: center; gap: 0.5rem; }
 .dest-desc  { font-size: 0.83rem; color: #666; margin-top: 4px; line-height: 1.5; }
 .result-preview { background: #f8f9ff; border: 1px solid #dde3f5; border-radius: 8px; padding: 1rem 1.25rem; font-size: 0.88rem; color: #3a3a6a; line-height: 1.7; max-height: 180px; overflow-y: auto; }
-.config-box { background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.83rem; color: #92400e; margin-top: 0.75rem; }
-.config-step { background: #f1f5f9; border-radius: 4px; padding: 3px 8px; margin: 3px 0; font-family: monospace; font-size: 0.8rem; color: #334155; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown(f"""
 <div class="page-header">
   <h1>{fa("fa-bolt")} Automation</h1>
-  <p>Push extracted insights to Google Sheets and Email automatically</p>
+  <p>Push extracted insights to Google Sheets and Email via n8n</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -58,24 +54,20 @@ st.subheader("Choose destinations")
 col1, col2 = st.columns(2)
 
 with col1:
-    sheets_ok = sheets_configured()
     st.markdown(f"""
-    <div class="dest-card {'active' if sheets_ok else ''}">
+    <div class="dest-card active">
       <div class="dest-title">{fa("fa-table-cells")} Google Sheets</div>
-      <div class="dest-desc">Appends one row: Timestamp · Summary · Tasks · Deadlines<br>Sheet: <strong>AI Distiller Output</strong></div>
-      {'<div class="config-box">Add <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> and <code>GOOGLE_SHEET_NAME</code> in config.py to enable.</div>' if not sheets_ok else ''}
+      <div class="dest-desc">Appends one row via n8n webhook<br>Sheet: <strong>AI Distiller Output</strong></div>
     </div>""", unsafe_allow_html=True)
-    send_sheets = st.checkbox("Send to Google Sheets", value=sheets_ok)
+    send_sheets = st.checkbox("Send to Google Sheets", value=True)
 
 with col2:
-    email_ok = email_configured()
     st.markdown(f"""
-    <div class="dest-card {'active' if email_ok else ''}">
+    <div class="dest-card active">
       <div class="dest-title">{fa("fa-envelope")} Email Report</div>
-      <div class="dest-desc">Sends a formatted HTML email with all insights<br>Via Gmail SMTP</div>
-      {'<div class="config-box">Add <code>EMAIL_SENDER</code>, <code>EMAIL_PASSWORD</code>, <code>EMAIL_TO</code> in config.py to enable.</div>' if not email_ok else ''}
+      <div class="dest-desc">Sends formatted HTML email via n8n webhook<br>Via Gmail integration</div>
     </div>""", unsafe_allow_html=True)
-    send_mail = st.checkbox("Send Email Report", value=email_ok)
+    send_mail = st.checkbox("Send Email Report", value=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 run_auto = st.button("Run Automation", type="primary")
@@ -84,22 +76,22 @@ if run_auto:
     if not send_sheets and not send_mail:
         st.error("Select at least one destination.")
     else:
-        log = {}
-        with st.status("Running automation pipeline…", expanded=True) as status:
-            if send_sheets:
-                st.write("Appending row to Google Sheets…")
-                r = append_to_sheet(result, st.session_state.get("last_input",""))
-                log["Google Sheets"] = r
-                st.write(("Done — " if r["success"] else "Error — ") + r["message"])
-            if send_mail:
-                st.write("Sending email report…")
-                r = send_email(result)
-                log["Email"] = r
-                st.write(("Done — " if r["success"] else "Error — ") + r["message"])
-            all_ok = all(v["success"] for v in log.values())
-            status.update(label="Automation complete!" if all_ok else "Completed with errors.", state="complete" if all_ok else "error")
+        targets = []
+        if send_sheets: targets.append("Google Sheets")
+        if send_mail:   targets.append("Email")
+
+        with st.status("Sending to n8n…", expanded=True) as status:
+            st.write(f"Firing webhook → {', '.join(targets)}…")
+            log = send_to_n8n(result, targets)
+            all_ok = all(v["status_code"] == 200 for v in log.values())
+            status.update(
+                label="Automation complete!" if all_ok else "Completed with errors.",
+                state="complete" if all_ok else "error"
+            )
 
         st.markdown("---")
         for dest, res in log.items():
-            if res["success"]: st.success(f"**{dest}** — {res['message']}")
-            else:              st.error(f"**{dest}** — {res['message']}")
+            if res["status_code"] == 200:
+                st.success(f"**{dest}** — {res['message']}")
+            else:
+                st.error(f"**{dest}** — {res['message']}")

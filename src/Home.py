@@ -1,8 +1,9 @@
 import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-from mock_mode import sheets_configured, email_configured
 from fa_icons import inject_fa, fa
+from utils import email_configured,sheets_configured
+from config import GROQ_API_KEY
 
 st.set_page_config(
     page_title="AI Smart-Distiller",
@@ -16,7 +17,6 @@ if "exited" not in st.session_state:
 
 inject_fa()
 
-# ── Sidebar exit ──────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
     <style>
@@ -38,7 +38,6 @@ with st.sidebar:
         st.session_state.exited = True
         st.rerun()
 
-# ── Exit screen ───────────────────────────────────────────────
 if st.session_state.exited:
     st.markdown("""
 <style>
@@ -82,7 +81,7 @@ section.main > div { background: #07071a !important; }
       <div class="badge-roll">24K-1023</div>
       <div class="badge-role">Backend &amp; API Integration</div>
     </div>
-      <div class="ty-badge">
+    <div class="ty-badge">
       <div class="badge-avatar">GM</div>
       <div class="badge-name">Ghulam Mujtaba</div>
       <div class="badge-roll">24K-0535</div>
@@ -94,7 +93,6 @@ section.main > div { background: #07071a !important; }
 """, unsafe_allow_html=True)
     st.stop()
 
-# ── Page styles ───────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -109,10 +107,6 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 .feature-icon { font-size: 1.6rem; margin-bottom: 0.75rem; color: #e8d5b7; }
 .feature-title { font-weight: 500; font-size: 1rem; color: #e8d5b7; margin-bottom: 0.4rem; }
 .feature-desc { font-size: 0.85rem; color: #8899bb; line-height: 1.6; }
-.nav-card { background: linear-gradient(135deg, #1a1a3e, #0d1b2a); border: 1px solid #ffffff18; border-radius: 12px; padding: 1.25rem 1.5rem; text-decoration: none; display: block; transition: all 0.2s; }
-.nav-card:hover { border-color: #e8d5b750; }
-.nav-card-title { font-size: 1rem; font-weight: 500; color: #e8d5b7; display: flex; align-items: center; gap: 0.5rem; }
-.nav-card-sub { font-size: 0.82rem; color: #8899bb; margin-top: 3px; }
 .stat-card { background: #ffffff08; border: 1px solid #ffffff14; border-radius: 10px; padding: 1rem 1.25rem; }
 .stat-ok   { color: #28a745; font-weight: 600; }
 .stat-warn { color: #e8d5b7; font-weight: 600; }
@@ -121,7 +115,7 @@ section.main > div { background: #0a0a1a; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown(f"""
+st.markdown("""
 <div class="hero">
   <div class="badge-tag">AI Project</div>
   <div class="hero-title">AI Smart-Distiller</div>
@@ -132,60 +126,43 @@ st.markdown(f"""
 st.markdown("### What this system does")
 c1, c2, c3 = st.columns(3)
 with c1:
-    st.markdown(f"""<div class="feature-card"><div class="feature-icon">{fa("fa-robot")}</div><div class="feature-title">AI Extraction</div><div class="feature-desc">Uses GPT-4o-mini to intelligently extract summaries, action items, and deadlines from any long-form text.</div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="feature-card"><div class="feature-icon">{fa("fa-robot")}</div><div class="feature-title">AI Extraction</div><div class="feature-desc">Uses Gemini to intelligently extract summaries, action items, and deadlines from any long-form text.</div></div>""", unsafe_allow_html=True)
 with c2:
     st.markdown(f"""<div class="feature-card"><div class="feature-icon">{fa("fa-table-cells")}</div><div class="feature-title">Google Sheets</div><div class="feature-desc">Automatically appends extracted data as a new row — timestamp, summary, tasks, and deadlines organized for you.</div></div>""", unsafe_allow_html=True)
 with c3:
     st.markdown(f"""<div class="feature-card"><div class="feature-icon">{fa("fa-envelope")}</div><div class="feature-title">Email Reports</div><div class="feature-desc">Sends a beautifully formatted HTML email report with all extracted insights via Gmail SMTP.</div></div>""", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-
 st.markdown("### Navigate to")
 st.markdown("""
 <div style="display:flex; gap:16px; margin-bottom:1rem;">
-
   <a href="/Distiller" style="flex:1; text-decoration:none;">
-    <div style="background:linear-gradient(135deg,#1a1a3e,#0d1b2a); border:1px solid rgba(255,255,255,0.12);
-         border-radius:12px; padding:1.25rem 1.5rem; transition:all 0.2s; height:100%;">
+    <div style="background:linear-gradient(135deg,#1a1a3e,#0d1b2a); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.25rem 1.5rem; transition:all 0.2s; height:100%;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-        <span style="width:36px;height:36px;background:rgba(139,124,248,0.15);border-radius:8px;
-              display:flex;align-items:center;justify-content:center;">
-          <i class="fas fa-brain" style="color:#8b7cf8;font-size:15px;"></i>
-        </span>
+        <span style="width:36px;height:36px;background:rgba(139,124,248,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-brain" style="color:#8b7cf8;font-size:15px;"></i></span>
         <span style="font-size:1rem;font-weight:600;color:#e8d5b7;">Distiller</span>
       </div>
       <div style="font-size:0.82rem;color:#6677aa;padding-left:46px;">Paste text and extract AI insights</div>
     </div>
   </a>
-
   <a href="/Automation" style="flex:1; text-decoration:none;">
-    <div style="background:linear-gradient(135deg,#1a1a3e,#0d1b2a); border:1px solid rgba(255,255,255,0.12);
-         border-radius:12px; padding:1.25rem 1.5rem; transition:all 0.2s; height:100%;">
+    <div style="background:linear-gradient(135deg,#1a1a3e,#0d1b2a); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.25rem 1.5rem; transition:all 0.2s; height:100%;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-        <span style="width:36px;height:36px;background:rgba(61,220,132,0.12);border-radius:8px;
-              display:flex;align-items:center;justify-content:center;">
-          <i class="fas fa-bolt" style="color:#3ddc84;font-size:15px;"></i>
-        </span>
+        <span style="width:36px;height:36px;background:rgba(61,220,132,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-bolt" style="color:#3ddc84;font-size:15px;"></i></span>
         <span style="font-size:1rem;font-weight:600;color:#e8d5b7;">Automation</span>
       </div>
       <div style="font-size:0.82rem;color:#6677aa;padding-left:46px;">Push data to Sheets &amp; Email</div>
     </div>
   </a>
-
   <a href="/About" style="flex:1; text-decoration:none;">
-    <div style="background:linear-gradient(135deg,#1a1a3e,#0d1b2a); border:1px solid rgba(255,255,255,0.12);
-         border-radius:12px; padding:1.25rem 1.5rem; transition:all 0.2s; height:100%;">
+    <div style="background:linear-gradient(135deg,#1a1a3e,#0d1b2a); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1.25rem 1.5rem; transition:all 0.2s; height:100%;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-        <span style="width:36px;height:36px;background:rgba(91,192,235,0.12);border-radius:8px;
-              display:flex;align-items:center;justify-content:center;">
-          <i class="fas fa-book-open" style="color:#5bc0eb;font-size:15px;"></i>
-        </span>
+        <span style="width:36px;height:36px;background:rgba(91,192,235,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-book-open" style="color:#5bc0eb;font-size:15px;"></i></span>
         <span style="font-size:1rem;font-weight:600;color:#e8d5b7;">About</span>
       </div>
       <div style="font-size:0.82rem;color:#6677aa;padding-left:46px;">Project details &amp; setup guide</div>
     </div>
   </a>
-
 </div>
 """, unsafe_allow_html=True)
 
@@ -198,6 +175,6 @@ def status_card(col, label, ok, ok_msg, fail_msg):
     msg    = ok_msg if ok else fail_msg
     col.markdown(f"""<div class="stat-card"><div class="{'stat-ok' if ok else 'stat-warn'}">{status}</div><div style="font-size:0.85rem;color:#c8d0e8;margin-top:4px;">{label}</div><div class="stat-msg">{msg}</div></div>""", unsafe_allow_html=True)
 
-with s1: status_card(s1, "OpenAI API", bool(__import__('config').OPENAI_API_KEY.strip()), "gpt-4o-mini connected", "Add OPENAI_API_KEY in config.py")
+with s1: status_card(s1, "Groq API", bool(GROQ_API_KEY.strip()), "llama-3.3-70b connected", "Add GROQ_API_KEY in config.py")
 with s2: status_card(s2, "Google Sheets", sheets_configured(), "Service account linked", "Add GOOGLE_SERVICE_ACCOUNT_JSON")
 with s3: status_card(s3, "Email (Gmail)", email_configured(), "SMTP configured", "Add EMAIL_SENDER + EMAIL_PASSWORD")

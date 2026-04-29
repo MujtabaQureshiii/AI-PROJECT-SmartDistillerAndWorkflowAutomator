@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -26,7 +25,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 st.markdown(f"""
 <div class="page-header">
   <h1>{fa("fa-brain")} Distiller</h1>
-  <p>Paste any long-form text and extract structured insights using GPT-4o-mini</p>
+  <p>Paste any long-form text and extract structured insights using Gemini</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -77,7 +76,7 @@ if run_btn:
         st.error("Please paste some text before processing.")
     else:
         with st.status("Running AI extraction pipeline…", expanded=True) as status:
-            st.write("Sending text to OpenAI API (gpt-4o-mini)…")
+            st.write("Sending text to Gemini API…")
             result = extract_insights(input_text)
             st.session_state.last_result = result
             st.session_state.last_input  = input_text[:300]

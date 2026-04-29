@@ -1,21 +1,17 @@
-"""
-extractor.py — LLM-based insight extraction via OpenAI API.
-"""
 import json
 import re
-from config import OPENAI_API_KEY, OPENAI_MODEL
+from groq import Groq
+from config import GROQ_API_KEY, GROQ_MODEL
 
 SYSTEM_PROMPT = """You are an expert information extractor. Given any text, you MUST return ONLY a valid JSON object — no markdown, no explanation, no extra text. The JSON must have exactly these three keys:
 
 {
   "summary": "A concise 2-3 sentence summary of the entire text.",
   "tasks": [
-    "Task or action item 1",
-    "Task or action item 2"
+    "Task or action item 1"
   ],
   "deadlines": [
-    {"date": "April 15, 2026", "context": "What is due on this date"},
-    {"date": "May 1, 2026",   "context": "What is due on this date"}
+    {"date": "April 15, 2026", "context": "What is due on this date"}
   ]
 }
 
@@ -28,12 +24,10 @@ Rules:
 
 
 def extract_insights(text: str) -> dict:
-    """Calls OpenAI API for extraction."""
     try:
-        import openai
-        client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        client = Groq(api_key=GROQ_API_KEY)
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user",   "content": f"Extract insights from this text:\n\n{text}"}
@@ -46,7 +40,7 @@ def extract_insights(text: str) -> dict:
         return json.loads(raw)
     except Exception as e:
         return {
-            "summary": f"Error calling OpenAI API: {str(e)}",
+            "summary": f"Error calling Groq API: {str(e)}",
             "tasks": [],
             "deadlines": [],
             "error": str(e)

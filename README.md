@@ -1,160 +1,117 @@
-<div align="center">
+# AI Smart-Distiller & Workflow Automator
 
-<img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-<img src="https://img.shields.io/badge/Streamlit-1.33+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"/>
-<img src="https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=for-the-badge&logo=openai&logoColor=white"/>
-<img src="https://img.shields.io/badge/Google_Sheets-API-34A853?style=for-the-badge&logo=google-sheets&logoColor=white"/>
-<img src="https://img.shields.io/badge/Gmail-SMTP-EA4335?style=for-the-badge&logo=gmail&logoColor=white"/>
-
-<br><br>
-
-# 🧠 AI Smart-Distiller
-
-### *An Intelligent Information Pipeline — Extract. Structure. Automate.*
-
-> Paste any long-form text → AI extracts insights → Data is automatically pushed to **Google Sheets** and **Email** — in seconds.
-
-<br>
-
-</div>
+**FAST-NUCES — Artificial Intelligence Project**
+Group: Ghulam Mujtaba Qureshi (24K-0535) · Syed Muhammad Muzammil (24K-0887) · Muzammil Ali (24K-1023)
+Instructor: Atif Luqman
 
 ---
 
-## 📌 Overview
+## What This Project Does
 
-**AI Smart-Distiller** is a multi-page Streamlit application that solves the real-world problem of **information overload**. Students and professionals constantly deal with long meeting transcripts, project briefs, and articles. Manually reading them, finding deadlines, writing summaries, and typing everything into spreadsheets is slow and error-prone.
+Paste any long text (meeting notes, article, project brief) into the web app.
+The AI extracts:
+- **Summary** — 2–3 sentence core message
+- **Tasks** — action items and responsibilities
+- **Deadlines** — dates with context
 
-This tool automates the entire pipeline using a Large Language Model:
+Then automatically routes the structured data to **Google Sheets**, **Discord**, or **Email** via an n8n webhook.
 
-```
-Input Text  →  GPT-4o-mini (OpenAI API)  →  Structured JSON
-                                                    │
-                              ┌─────────────────────┴─────────────────────┐
-                              ▼                                           ▼
-                     📊 Google Sheets                              📧 Gmail SMTP
-                  (Row appended via gspread)                 (HTML report delivered)
+---
+
+## Quick Start (Demo Mode — No Keys Needed)
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the app (from the src/ folder)
+cd src
+streamlit run app.py
 ```
 
-> **90% faster** than doing it manually — from 45 minutes to ~30 seconds per document.
+The app runs in **Demo Mode** by default — all AI responses and webhook calls are simulated. It works perfectly for demonstration.
 
 ---
 
-## ✨ Features
+## Going Live (Real API Keys)
 
-| Feature | Description |
-|---|---|
-|  **AI Extraction** | Uses GPT-4o-mini to extract summary, action items, and deadlines from any text |
-|  **Google Sheets** | Appends structured data as a new row automatically via the Sheets API |
-|  **Email Reports** | Sends a beautifully formatted HTML email report via Gmail SMTP |
-|  **Multi-page UI** | Clean 4-page Streamlit app — Home, Distiller, Automation, About |
-|  **Status Dashboard** | Live system status showing which integrations are configured |
-|  **Exit Screen** | Presentation-ready thank-you screen with team credits |
+### Step 1 — Get an OpenAI API Key
+1. Go to https://platform.openai.com/api-keys
+2. Click **Create new secret key**
+3. Copy the key (starts with `sk-proj-...`)
+
+### Step 2 — Set up n8n
+1. Go to https://n8n.io → sign up free
+2. Create a new workflow → add a **Webhook** node
+3. Copy the **Webhook URL**
+4. Add nodes: **Google Sheets** / **Discord** / **Send Email** after the webhook
+5. Activate the workflow
+
+### Step 3 — Add keys to config.py
+```python
+OPENAI_API_KEY  = "sk-proj-YOUR_KEY_HERE"
+N8N_WEBHOOK_URL = "https://yourname.app.n8n.cloud/webhook/YOUR_ID"
+```
+
+### Step 4 — Run
+```bash
+cd src
+streamlit run app.py
+```
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 ai_smart_distiller/
 ├── src/
-│   ├── Home.py                  # Landing page & system status dashboard
-│   ├── config.py                # API keys & settings (fill this in)
-│   ├── extractor.py             # OpenAI API extraction logic
-│   ├── sheets.py                # Google Sheets integration (gspread)
-│   ├── mailer.py                # Gmail SMTP email sender
-│   ├── mock_mode.py             # Configuration status helpers
-│   ├── fa_icons.py              # Font Awesome icon helper
-│   └── pages/
-│       ├── 1_Distiller.py       # Text input & AI extraction UI
-│       ├── 2_Automation.py      # Sheets + Email automation UI
-│       └── 3_About.py           # Project info, team, setup guide
+│   ├── app.py          ← Streamlit frontend (main entry point)
+│   ├── extractor.py    ← LLM extraction logic (OpenAI + mock)
+│   ├── webhook.py      ← n8n webhook integration (real + mock)
+│   ├── mock_mode.py    ← Detects whether keys are configured
+│   └── config.py       ← API keys (fill these in)
+├── docs/
+│   └── report.docx     ← Project documentation
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## How It Works (Technical)
 
-### Prerequisites
-
-- Python 3.10 or higher
-- A Gmail account (for email automation)
-- An OpenAI account (for real AI extraction)
-- A Google Cloud project (for Google Sheets)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/muzammil-zaidi/AI-Smart-Distiller.git
-cd AI-Smart-Distiller
+```
+User pastes text
+      ↓
+Streamlit (app.py)
+      ↓
+OpenAI API — gpt-4o-mini with System Role Prompt
+      ↓
+Structured JSON { summary, tasks, deadlines }
+      ↓
+n8n Webhook (HTTP POST)
+      ↓
+Google Sheets / Discord / Email
 ```
 
-### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-> **Windows users:** If you get a permission error, use:
-> ```bash
-> pip install --user -r requirements.txt
-> ```
-
-### 3. Run the App
-
-```bash
-cd src
-python -m streamlit run Home.py
-```
-
-Open your browser at `http://localhost:8501`
+The LLM uses a strict **System Role Prompt** that enforces JSON output — it identifies deadlines by semantic context, not just keyword matching.
 
 ---
 
-## 🧠 How It Works
+## Technologies Used
 
-### AI Extraction (Prompt Engineering)
-
-The system uses a carefully engineered **system prompt** that instructs GPT-4o-mini to return a strict JSON object:
-
-```json
-{
-  "summary": "2-3 sentence summary of the document.",
-  "tasks": [
-    "Action item 1",
-    "Action item 2"
-  ],
-  "deadlines": [
-    { "date": "May 1, 2026", "context": "Final report submission" }
-  ]
-}
-```
-
-**Why LLM over keyword search?**
-
-A simple regex/keyword search would find every date in a document — including dates mentioned in passing (*"the company was founded in 1998"*). The LLM **understands context**: it distinguishes a deadline from a historical reference, identifies implicit action items not in numbered lists, and generates summaries that capture intent rather than just words.
-
-### Automation Pipeline
-
-```
-User clicks "Run Automation"
-        │
-        ├──► sheets.py ──► gspread.authorize() ──► ws.append_row([timestamp, summary, tasks, deadlines])
-        │
-        └──► mailer.py ──► smtplib.SMTP_SSL("smtp.gmail.com", 465) ──► server.sendmail()
-```
+| Tool | Purpose |
+|------|---------|
+| Streamlit | Web frontend (Python) |
+| OpenAI API (gpt-4o-mini) | NLU & structured extraction |
+| n8n | Workflow automation & API routing |
+| Python requests | HTTP communication |
+| JSON | Data exchange format |
 
 ---
 
-## 🛠️ Tech Stack
-
-| Technology | Purpose |
-|---|---|
-| **Python 3.12** | Core language |
-| **Streamlit** | Multi-page web interface |
-| **OpenAI API** (`gpt-4o-mini`) | Natural language understanding & JSON extraction |
-| **gspread** | Google Sheets read/write via Service Account |
-| **google-auth** | OAuth2 credentials for Google APIs |
-| **smtplib** | Gmail SMTP for email delivery |
-| **Font Awesome** | UI icons (via CDN) |
+## References
+- OpenAI API Documentation: https://platform.openai.com/docs
+- Streamlit Documentation: https://docs.streamlit.io
+- n8n Documentation: https://docs.n8n.io
