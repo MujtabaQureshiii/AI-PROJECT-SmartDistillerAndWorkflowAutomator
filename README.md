@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="AI-Project-Banner.png" alt="Banner" width="1000"/>
+</p>
+
 <div align="center">
 
 <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
